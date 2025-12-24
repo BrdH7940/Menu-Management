@@ -45,6 +45,7 @@ export function EditItemDrawer({
   onOpenChange,
   onSave,
 }: EditItemDrawerProps) {
+  const [activeTab, setActiveTab] = useState("general")
   const [modifierGroups, setModifierGroups] = useState<ModifierGroup[]>(
     item?.modifierGroups || []
   )
@@ -76,6 +77,7 @@ export function EditItemDrawer({
         isAvailable: item.isAvailable,
       })
       setModifierGroups(item.modifierGroups)
+      setActiveTab("general") // Reset to first tab when item changes
     }
   }, [item, reset])
 
@@ -206,7 +208,7 @@ export function EditItemDrawer({
           </DrawerHeader>
 
           <DrawerBody className="flex-1 overflow-y-auto">
-            <Tabs defaultValue="general" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="general">General Info</TabsTrigger>
                 <TabsTrigger value="modifiers">Modifiers</TabsTrigger>

@@ -1,12 +1,12 @@
-import { useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Sidebar } from "@/components/layout/sidebar"
 import { TopBar } from "@/components/layout/topbar"
-import { MenuGrid } from "@/components/menu/menu-grid"
-import { EditItemDrawer } from "@/components/menu/edit-item-drawer"
-import { QuickEditPriceDialog } from "@/components/menu/quick-edit-price-dialog"
-import { useMenuItems, useMenuHealth, useUpdateMenuItem } from "@/hooks/use-menu-query"
-import { MenuItem } from "@/types/menu"
+import { useMenuHealth } from "@/hooks/use-menu-query"
+import { Dashboard } from "@/pages/dashboard"
+import { MenuItems } from "@/pages/menu-items"
+import { Analytics } from "@/pages/analytics"
+import { SettingsPage } from "@/pages/settings"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,38 +18,7 @@ const queryClient = new QueryClient({
 })
 
 function AppContent() {
-  const { data: items = [], isLoading } = useMenuItems()
   const { data: menuHealth } = useMenuHealth()
-  const updateMutation = useUpdateMenuItem()
-
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [quickEditItem, setQuickEditItem] = useState<MenuItem | null>(null)
-  const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
-
-  const handleEditItem = (item: MenuItem) => {
-    setSelectedItem(item)
-    setIsDrawerOpen(true)
-  }
-
-  const handleQuickEditPrice = (item: MenuItem) => {
-    setQuickEditItem(item)
-    setIsQuickEditOpen(true)
-  }
-
-  const handleSaveItem = async (item: MenuItem) => {
-    await updateMutation.mutateAsync({
-      id: item.id,
-      data: item,
-    })
-  }
-
-  const handleQuickSavePrice = async (item: MenuItem, newPrice: number) => {
-    await updateMutation.mutateAsync({
-      id: item.id,
-      data: { price: newPrice },
-    })
-  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -57,28 +26,15 @@ function AppContent() {
       <div className="flex flex-1 flex-col ml-64">
         <TopBar menuHealth={menuHealth || null} />
         <main className="flex-1 overflow-y-auto bg-zinc-50 p-6">
-          <MenuGrid
-            items={items}
-            isLoading={isLoading}
-            onEditItem={handleEditItem}
-            onQuickEditPrice={handleQuickEditPrice}
-          />
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/menu-items" element={<MenuItems />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
         </main>
       </div>
-
-      <EditItemDrawer
-        item={selectedItem}
-        open={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
-        onSave={handleSaveItem}
-      />
-
-      <QuickEditPriceDialog
-        item={quickEditItem}
-        open={isQuickEditOpen}
-        onOpenChange={setIsQuickEditOpen}
-        onSave={handleQuickSavePrice}
-      />
     </div>
   )
 }
@@ -86,7 +42,9 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </QueryClientProvider>
   )
 }

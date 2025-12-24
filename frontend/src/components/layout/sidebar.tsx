@@ -1,4 +1,5 @@
 import { Menu, Home, Settings, BarChart3 } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -6,7 +7,23 @@ interface SidebarProps {
   className?: string
 }
 
+interface NavItem {
+  path: string
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+}
+
+const navItems: NavItem[] = [
+  { path: "/dashboard", label: "Dashboard", icon: Home },
+  { path: "/menu-items", label: "Menu Items", icon: Menu },
+  { path: "/analytics", label: "Analytics", icon: BarChart3 },
+  { path: "/settings", label: "Settings", icon: Settings },
+]
+
 export function Sidebar({ className }: SidebarProps) {
+  const navigate = useNavigate()
+  const location = useLocation()
+
   return (
     <aside
       className={cn(
@@ -25,34 +42,24 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-4">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-          >
-            <Home className="h-4 w-4" />
-            Dashboard
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 bg-primary/10 text-primary hover:bg-primary/20"
-          >
-            <Menu className="h-4 w-4" />
-            Menu Items
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-          >
-            <BarChart3 className="h-4 w-4" />
-            Analytics
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-          >
-            <Settings className="h-4 w-4" />
-            Settings
-          </Button>
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = location.pathname === item.path
+            return (
+              <Button
+                key={item.path}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3",
+                  isActive && "bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+                onClick={() => navigate(item.path)}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            )
+          })}
         </nav>
       </div>
     </aside>
