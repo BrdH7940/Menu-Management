@@ -1,20 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { menuApi } from "@/lib/api"
-import { MenuItem, MenuHealth } from "@/types/menu"
+import { MenuItem, MenuHealth, MenuItemListResponse, MenuItemFilters } from "@/types/menu"
 
-export function useMenuItems() {
-  return useQuery<MenuItem[]>({
-    queryKey: ["menu-items"],
-    queryFn: () => menuApi.getItems(),
+export function useMenuItems(filters?: MenuItemFilters) {
+  return useQuery<MenuItemListResponse>({
+    queryKey: ["menu-items", filters],
+    queryFn: () => menuApi.getItems(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
 
-export function useMenuItem(id: string) {
+export function useMenuItem(id: string, options?: { enabled?: boolean }) {
   return useQuery<MenuItem>({
     queryKey: ["menu-items", id],
     queryFn: () => menuApi.getItem(id),
-    enabled: !!id,
+    enabled: !!id && (options?.enabled !== false),
   })
 }
 

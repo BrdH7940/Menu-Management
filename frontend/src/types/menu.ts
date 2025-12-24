@@ -30,11 +30,47 @@ export interface MenuItem {
   description?: string;
   price: number;
   imageUrl?: string;
+  primaryPhotoUrl?: string;
   categoryId: string;
-  isAvailable: boolean;
-  displayOrder: number;
-  modifierGroups: ModifierGroup[];
+  categoryName?: string;
+  status: 'available' | 'unavailable' | 'sold_out';
+  isAvailable?: boolean; // For backward compatibility
+  prepTimeMinutes?: number;
+  isChefRecommended?: boolean;
+  popularityScore?: number;
+  displayOrder?: number;
+  modifierGroups?: ModifierGroup[];
   tags?: string[];
+  photos?: MenuItemPhoto[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MenuItemPhoto {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
+export interface MenuItemListResponse {
+  items: MenuItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface MenuItemFilters {
+  page?: number;
+  limit?: number;
+  q?: string;
+  categoryId?: string;
+  status?: 'available' | 'unavailable' | 'sold_out';
+  sort?: 'price' | 'created_at' | 'popularity';
+  order?: 'asc' | 'desc';
 }
 
 export interface MenuHealth {

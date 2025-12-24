@@ -13,6 +13,9 @@ interface MenuItemCardProps {
 }
 
 export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardProps) {
+  const isAvailable = item.status === 'available' || item.isAvailable === true;
+  const statusText = item.status === 'available' ? 'Available' : item.status === 'sold_out' ? 'Sold Out' : 'Unavailable';
+  
   return (
     <motion.div
       layout
@@ -25,19 +28,19 @@ export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardPro
       <Card
         className={cn(
           "group cursor-pointer overflow-hidden transition-all hover:shadow-md",
-          !item.isAvailable && "opacity-75"
+          !isAvailable && "opacity-75"
         )}
         onClick={() => onEdit(item)}
       >
         {/* Image */}
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
-          {item.imageUrl ? (
+          {(item.imageUrl || item.primaryPhotoUrl) ? (
             <motion.img
-              src={item.imageUrl}
+              src={item.imageUrl || item.primaryPhotoUrl}
               alt={item.name}
               className={cn(
                 "h-full w-full object-cover transition-all duration-300 group-hover:scale-105",
-                !item.isAvailable && "grayscale"
+                !isAvailable && "grayscale"
               )}
               loading="lazy"
             />
@@ -50,10 +53,10 @@ export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardPro
           {/* Status Badge */}
           <div className="absolute right-2 top-2">
             <Badge
-              variant={item.isAvailable ? "success" : "destructive"}
+              variant={isAvailable ? "default" : "destructive"}
               className="shadow-sm"
             >
-              {item.isAvailable ? "Available" : "Sold Out"}
+              {statusText}
             </Badge>
           </div>
         </div>

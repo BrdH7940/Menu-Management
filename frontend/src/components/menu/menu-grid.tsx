@@ -29,10 +29,12 @@ export function MenuGrid({ items, isLoading, onEditItem, onQuickEditPrice }: Men
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       // Sort by availability first, then by display order
-      if (a.isAvailable !== b.isAvailable) {
-        return a.isAvailable ? -1 : 1
+      const aAvailable = a.status === 'available' || a.isAvailable === true;
+      const bAvailable = b.status === 'available' || b.isAvailable === true;
+      if (aAvailable !== bAvailable) {
+        return aAvailable ? -1 : 1
       }
-      return a.displayOrder - b.displayOrder
+      return (a.displayOrder || 0) - (b.displayOrder || 0)
     })
   }, [items])
 

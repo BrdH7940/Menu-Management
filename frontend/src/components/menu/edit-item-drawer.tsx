@@ -5,6 +5,7 @@ import { z } from "zod"
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable"
 import { MenuItem, ModifierGroup } from "@/types/menu"
+import { useMenuItem } from "@/hooks/use-menu-query"
 import {
   Drawer,
   DrawerContent,
@@ -21,6 +22,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ModifierGroupItem } from "./modifier-group-item"
+import { PhotoManager } from "./photo-manager"
 import { Plus } from "lucide-react"
 
 const menuItemSchema = z.object({
@@ -46,9 +48,18 @@ export function EditItemDrawer({
   onSave,
 }: EditItemDrawerProps) {
   const [activeTab, setActiveTab] = useState("general")
+  const { data: fullItem, isLoading } = useMenuItem(item?.id || "", { enabled: !!item?.id && open })
+  const selectedItem = fullItem || item
   const [modifierGroups, setModifierGroups] = useState<ModifierGroup[]>(
-    item?.modifierGroups || []
+    selectedItem?.modifierGroups || []
   )
+
+  // Update modifierGroups when selectedItem changes
+  useEffect(() => {
+    if (selectedItem) {
+      setModifierGroups(selectedItem.modifierGroups || [])
+    }
+  }, [selectedItem])
 
   const {
     register,
@@ -60,26 +71,27 @@ export function EditItemDrawer({
   } = useForm<MenuItemFormData>({
     resolver: zodResolver(menuItemSchema),
     defaultValues: {
-      name: item?.name || "",
-      description: item?.description || "",
-      price: item?.price || 0,
-      isAvailable: item?.isAvailable ?? true,
+      name: selectedItem?.name || "",
+      description: selectedItem?.description || "",
+      price: selectedItem?.price || 0,
+      isAvailable: (selectedItem?.status === "available" || selectedItem?.isAvailable) ?? true,
     },
   })
 
-  // Update form when item changes
+  // Update form when selectedItem changes
   useEffect(() => {
-    if (item) {
+    if (selectedItem) {
+      const isAvailable = selectedItem.status === 'available' || selectedItem.isAvailable === true;
       reset({
-        name: item.name,
-        description: item.description || "",
-        price: item.price,
-        isAvailable: item.isAvailable,
+        name: selectedItem.name,
+        description: selectedItem.description || "",
+        price: selectedItem.price,
+        isAvailable,
       })
-      setModifierGroups(item.modifierGroups)
+      setModifierGroups(selectedItem.modifierGroups || [])
       setActiveTab("general") // Reset to first tab when item changes
     }
-  }, [item, reset])
+  }, [selectedItem, reset])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -87,12 +99,13 @@ export function EditItemDrawer({
   )
 
   const onSubmit = async (data: MenuItemFormData) => {
-    if (!item) return
+    if (!selectedItem) return
 
     const updatedItem: MenuItem = {
-      ...item,
+      ...selectedItem,
       ...data,
       modifierGroups,
+      photos: selectedItem.photos,
     }
 
     await onSave(updatedItem)
@@ -195,7 +208,7 @@ export function EditItemDrawer({
     ])
   }
 
-  if (!item) return null
+  if (!selectedItem && !isLoading) return null
 
   const isAvailable = watch("isAvailable")
 
@@ -204,7 +217,9 @@ export function EditItemDrawer({
       <DrawerContent side="right" className="max-w-3xl">
         <form onSubmit={handleSubmit(onSubmit)} className="flex h-full flex-col">
           <DrawerHeader>
-            <DrawerTitle>Edit Menu Item</DrawerTitle>
+            <DrawerTitle>
+              {isLoading ? "Loading..." : "Edit Menu Item"}
+            </DrawerTitle>
           </DrawerHeader>
 
           <DrawerBody className="flex-1 overflow-y-auto">
@@ -325,11 +340,16 @@ export function EditItemDrawer({
               </TabsContent>
 
               <TabsContent value="photos" className="space-y-4 mt-4">
-                <div className="rounded-lg border border-dashed p-8 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Photo upload functionality coming soon
-                  </p>
-                </div>
+                {selectedItem && (
+                  <PhotoManager
+                    itemId={selectedItem.id}
+                    photos={selectedItem.photos || []}
+                    onPhotosChange={(photos) => {
+                      // Photos are updated via API, so we just need to refresh
+                      // The parent component should refetch the item
+                    }}
+                  />
+                )}
               </TabsContent>
             </Tabs>
           </DrawerBody>
