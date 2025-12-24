@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { menuApi } from "@/lib/api"
-import { MenuItem, MenuHealth, MenuItemListResponse, MenuItemFilters } from "@/types/menu"
+import { MenuItem, MenuCategory, MenuHealth, MenuItemListResponse, MenuItemFilters } from "@/types/menu"
 
 export function useMenuItems(filters?: MenuItemFilters) {
   return useQuery<MenuItemListResponse>({
@@ -83,6 +83,77 @@ export function useUpdateMenuItem() {
       queryClient.invalidateQueries({ queryKey: ["menu-items"] })
       queryClient.invalidateQueries({ queryKey: ["menu-items", variables.id] })
       queryClient.invalidateQueries({ queryKey: ["menu-health"] })
+    },
+  })
+}
+
+// Create menu item hook
+export function useCreateMenuItem() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: Omit<MenuItem, 'id' | 'created_at' | 'updated_at' | 'is_deleted'>) =>
+      menuApi.createItem(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] })
+      queryClient.invalidateQueries({ queryKey: ["menu-health"] })
+    },
+  })
+}
+
+// Delete (soft) menu item hook
+export function useDeleteMenuItem() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => menuApi.deleteItem(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] })
+      queryClient.invalidateQueries({ queryKey: ["menu-health"] })
+    },
+  })
+}
+
+// Categories hooks
+export function useCategories() {
+  return useQuery<MenuCategory[]>({
+    queryKey: ["categories"],
+    queryFn: () => menuApi.getCategories(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
+
+export function useCreateCategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { name: string; description?: string; display_order?: number }) =>
+      menuApi.createCategory(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+    },
+  })
+}
+
+export function useUpdateCategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<MenuCategory> }) =>
+      menuApi.updateCategory(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+    },
+  })
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => menuApi.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
     },
   })
 }

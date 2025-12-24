@@ -1,4 +1,4 @@
-import { Menu, Home, Settings, BarChart3 } from "lucide-react"
+import { Menu, Home, Settings, BarChart3, FolderOpen } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -15,9 +15,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: "/dashboard", label: "Dashboard", icon: Home },
-  { path: "/menu-items", label: "Menu Items", icon: Menu },
-  { path: "/analytics", label: "Analytics", icon: BarChart3 },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/categories", label: "Danh mục", icon: FolderOpen },
+  { path: "/menu-items", label: "Món ăn", icon: Menu },
+  { path: "/analytics", label: "Thống kê", icon: BarChart3 },
+  { path: "/settings", label: "Cài đặt", icon: Settings },
 ]
 
 export function Sidebar({ className }: SidebarProps) {

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MenuItemFilters, Category } from "@/types/menu";
+import { MenuItemFilters, MenuCategory } from "@/types/menu";
 import { menuApi } from "@/lib/api";
 
 interface FilterBarProps {
@@ -18,7 +18,7 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState(filters.q || "");
 
   useEffect(() => {

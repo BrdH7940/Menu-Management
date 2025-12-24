@@ -5,6 +5,7 @@ import { TopBar } from "@/components/layout/topbar"
 import { useMenuHealth } from "@/hooks/use-menu-query"
 import { Dashboard } from "@/pages/dashboard"
 import { MenuItems } from "@/pages/menu-items"
+import { Categories } from "@/pages/categories"
 import { Analytics } from "@/pages/analytics"
 import { SettingsPage } from "@/pages/settings"
 
@@ -30,6 +31,7 @@ function AppContent() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/menu-items" element={<MenuItems />} />
+            <Route path="/categories" element={<Categories />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
