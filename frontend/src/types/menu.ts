@@ -5,6 +5,19 @@ export interface Category {
   displayOrder: number;
 }
 
+// Type matching backend snake_case response
+export interface MenuCategory {
+  id: string;
+  name: string;
+  description?: string;
+  display_order: number;
+  status?: 'active' | 'inactive';
+  is_deleted?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  itemCount?: number;
+}
+
 export interface ModifierOption {
   id: string;
   name: string;

@@ -1,20 +1,22 @@
 import { motion } from "framer-motion"
-import { Edit2, DollarSign } from "lucide-react"
+import { Edit2, Trash2 } from "lucide-react"
 import { MenuItem } from "@/types/menu"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { formatPriceVND } from "@/lib/api"
 
 interface MenuItemCardProps {
   item: MenuItem
   onEdit: (item: MenuItem) => void
   onQuickEditPrice: (item: MenuItem) => void
+  onDelete?: (item: MenuItem) => void
 }
 
-export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardProps) {
+export function MenuItemCard({ item, onEdit, onQuickEditPrice, onDelete }: MenuItemCardProps) {
   const isAvailable = item.status === 'available' || item.isAvailable === true;
-  const statusText = item.status === 'available' ? 'Available' : item.status === 'sold_out' ? 'Sold Out' : 'Unavailable';
+  const statusText = item.status === 'available' ? 'Còn hàng' : item.status === 'sold_out' ? 'Hết hàng' : 'Không có sẵn';
   
   return (
     <motion.div
@@ -78,8 +80,8 @@ export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardPro
             {/* Price and Actions */}
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-primary">
-                  ${item.price.toFixed(2)}
+                <span className="text-xl font-bold text-primary">
+                  {formatPriceVND(item.price)}
                 </span>
               </div>
               <div className="flex gap-1">
@@ -89,22 +91,26 @@ export function MenuItemCard({ item, onEdit, onQuickEditPrice }: MenuItemCardPro
                   className="h-8 w-8"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onQuickEditPrice(item)
-                  }}
-                >
-                  <DollarSign className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation()
                     onEdit(item)
                   }}
+                  title="Chỉnh sửa"
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
+                {onDelete && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete(item)
+                    }}
+                    title="Xóa"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>

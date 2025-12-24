@@ -9,6 +9,7 @@ interface MenuGridProps {
   isLoading?: boolean
   onEditItem: (item: MenuItem) => void
   onQuickEditPrice: (item: MenuItem) => void
+  onDeleteItem?: (item: MenuItem) => void
 }
 
 function MenuGridSkeleton() {
@@ -25,7 +26,7 @@ function MenuGridSkeleton() {
   )
 }
 
-export function MenuGrid({ items, isLoading, onEditItem, onQuickEditPrice }: MenuGridProps) {
+export function MenuGrid({ items, isLoading, onEditItem, onQuickEditPrice, onDeleteItem }: MenuGridProps) {
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       // Sort by availability first, then by display order
@@ -66,6 +67,7 @@ export function MenuGrid({ items, isLoading, onEditItem, onQuickEditPrice }: Men
                 item={item}
                 onEdit={onEditItem}
                 onQuickEditPrice={onQuickEditPrice}
+                onDelete={onDeleteItem}
               />
             )
           }}
@@ -84,6 +86,7 @@ export function MenuGrid({ items, isLoading, onEditItem, onQuickEditPrice }: Men
           item={item}
           onEdit={onEditItem}
           onQuickEditPrice={onQuickEditPrice}
+          onDelete={onDeleteItem}
         />
       ))}
     </div>

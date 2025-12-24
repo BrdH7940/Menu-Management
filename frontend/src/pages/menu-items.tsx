@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Menu } from "lucide-react"
+import { Menu, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { MenuGrid } from "@/components/menu/menu-grid"
 import { EditItemDrawer } from "@/components/menu/edit-item-drawer"
 import { QuickEditPriceDialog } from "@/components/menu/quick-edit-price-dialog"
+import { CreateEditItemDialog } from "@/components/menu/create-edit-item-dialog"
+import { DeleteItemDialog } from "@/components/menu/delete-item-dialog"
 import { FilterBar } from "@/components/menu/filter-bar"
 import { SortBar } from "@/components/menu/sort-bar"
 import { Pagination } from "@/components/menu/pagination"
@@ -51,10 +54,25 @@ export function MenuItems() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [quickEditItem, setQuickEditItem] = useState<MenuItem | null>(null)
   const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const handleEditItem = (item: MenuItem) => {
-    setSelectedItem(item)
-    setIsDrawerOpen(true)
+    setEditingItem(item)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleDeleteItem = (item: MenuItem) => {
+    setDeleteItem(item)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleRefresh = () => {
+    // Trigger refetch by updating filters
+    setFilters({ ...filters })
   }
 
   const handleQuickEditPrice = (item: MenuItem) => {
@@ -89,9 +107,15 @@ export function MenuItems() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Menu className="h-6 w-6 text-primary" />
-        <h1 className="text-3xl font-bold">Menu Items</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Menu className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold">Quản lý Món ăn</h1>
+        </div>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Thêm món ăn
+        </Button>
       </div>
 
       <FilterBar filters={filters} onFiltersChange={handleFiltersChange} />
@@ -116,6 +140,7 @@ export function MenuItems() {
         isLoading={isLoading}
         onEditItem={handleEditItem}
         onQuickEditPrice={handleQuickEditPrice}
+        onDeleteItem={handleDeleteItem}
       />
 
       {data?.pagination && data.pagination.totalPages > 1 && (
@@ -138,6 +163,27 @@ export function MenuItems() {
         open={isQuickEditOpen}
         onOpenChange={setIsQuickEditOpen}
         onSave={handleQuickSavePrice}
+      />
+
+      <CreateEditItemDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        item={null}
+        onSuccess={handleRefresh}
+      />
+
+      <CreateEditItemDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        item={editingItem}
+        onSuccess={handleRefresh}
+      />
+
+      <DeleteItemDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        item={deleteItem}
+        onSuccess={handleRefresh}
       />
     </div>
   )
