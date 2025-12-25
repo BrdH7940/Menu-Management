@@ -47,6 +47,7 @@ export const menuApi = {
     const result = await response.json();
     // Backend trả về { success: true, data: [...], pagination: {...} }
     const items = result.data || [];
+    const backendPagination = result.pagination || {};
     
     // Transform backend response to frontend format
     return {
@@ -66,7 +67,12 @@ export const menuApi = {
           createdAt: p.created_at,
         })) || [],
       })),
-      pagination: result.pagination,
+      pagination: {
+        page: backendPagination.page || 1,
+        limit: backendPagination.limit || 20,
+        total: backendPagination.total || 0,
+        totalPages: backendPagination.total_pages || backendPagination.totalPages || 1,
+      },
     };
   },
 

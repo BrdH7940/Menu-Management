@@ -6,6 +6,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable"
 import { MenuItem, ModifierGroup } from "@/types/menu"
 import { useMenuItem } from "@/hooks/use-menu-query"
+import { useQueryClient } from "@tanstack/react-query"
 import {
   Drawer,
   DrawerContent,
@@ -47,6 +48,7 @@ export function EditItemDrawer({
   onOpenChange,
   onSave,
 }: EditItemDrawerProps) {
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState("general")
   const { data: fullItem, isLoading } = useMenuItem(item?.id || "", { enabled: !!item?.id && open })
   const selectedItem = fullItem || item
@@ -345,8 +347,9 @@ export function EditItemDrawer({
                     itemId={selectedItem.id}
                     photos={selectedItem.photos || []}
                     onPhotosChange={(photos) => {
-                      // Photos are updated via API, so we just need to refresh
-                      // The parent component should refetch the item
+                      // Invalidate queries to refresh the item data after photo changes
+                      queryClient.invalidateQueries({ queryKey: ["menu-items", selectedItem.id] })
+                      queryClient.invalidateQueries({ queryKey: ["menu-items"] })
                     }}
                   />
                 )}
