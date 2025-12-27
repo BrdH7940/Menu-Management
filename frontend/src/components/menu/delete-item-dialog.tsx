@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { MenuItem } from "@/types/menu";
-import { menuApi } from "@/lib/api";
+import { menuApi } from '@/lib/api';
 
 interface DeleteItemDialogProps {
   open: boolean;

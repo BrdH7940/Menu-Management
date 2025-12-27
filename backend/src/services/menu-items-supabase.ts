@@ -1,9 +1,6 @@
-import { supabase } from "../db/supabase.js";
-import {
-  CreateMenuItemInput,
-  UpdateMenuItemInput,
-  MenuItemQueryInput,
-} from "../schemas/validation.js";
+import { supabase } from '../db/supabase.js';
+import { CreateMenuItemInput, UpdateMenuItemInput, MenuItemQueryInput } from '../schemas/validation.js';
+import { modifierGroupService } from './modifier-groups-supabase.js';
 
 export interface MenuItem {
   id: string;
@@ -17,7 +14,8 @@ export interface MenuItem {
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
-  category_name?: string;
+    category_name?: string;
+    modifierGroups?: ModifierGroup[];
 }
 
 export interface PaginatedResult<T> {
@@ -29,7 +27,26 @@ export interface PaginatedResult<T> {
     total_pages: number;
   };
 }
+export interface ModifierOption {
+    id: string;
+    name: string;
+    price: number;
+    isDefault: boolean;
+    displayOrder: number;
+}
 
+export interface ModifierGroup {
+    id: string;
+    name: string;
+    description?: string;
+    isRequired: boolean;
+    minSelections: number;
+    maxSelections: number;
+    selectionType: 'single' | 'multiple';
+    displayOrder: number;
+    status: 'active' | 'inactive';
+    options: ModifierOption[];
+}
 // Helper function để format giá tiền VND
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat("vi-VN").format(price) + "đ";
@@ -265,6 +282,7 @@ export class MenuItemService {
       return null;
     }
 
+      const modifierGroups = await modifierGroupService.getByMenuItemId(id);
     const photos = (item as any).menu_item_photos || [];
     const primaryPhoto = photos.find((p: any) => p.is_primary);
 
@@ -274,7 +292,8 @@ export class MenuItemService {
       photos: photos,
       primary_photo_url: primaryPhoto?.url || photos[0]?.url || null,
       menu_categories: undefined,
-      menu_item_photos: undefined,
+        menu_item_photos: undefined,
+        modifierGroups,
     } as MenuItem;
   }
 

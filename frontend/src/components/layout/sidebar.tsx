@@ -18,7 +18,8 @@ const navItems: NavItem[] = [
   { path: "/categories", label: "Danh mục", icon: FolderOpen },
   { path: "/menu-items", label: "Món ăn", icon: Menu },
   { path: "/analytics", label: "Thống kê", icon: BarChart3 },
-  { path: "/settings", label: "Cài đặt", icon: Settings },
+    { path: "/settings", label: "Cài đặt", icon: Settings },
+    { path: "/guest-menu", label: "Menu khách", icon: Menu },
 ]
 
 export function Sidebar({ className }: SidebarProps) {

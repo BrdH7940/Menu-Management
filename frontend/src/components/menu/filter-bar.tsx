@@ -10,20 +10,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MenuItemFilters, MenuCategory } from "@/types/menu";
-import { menuApi } from "@/lib/api";
+import { menuApi } from '@/lib/api';
+import { guestMenuApi } from '@/lib/guest-menu-api';
 
 interface FilterBarProps {
   filters: MenuItemFilters;
   onFiltersChange: (filters: MenuItemFilters) => void;
+  isGuest?: boolean; // Nếu true, sẽ load categories từ guest API
 }
 
-export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, isGuest = false }: FilterBarProps) {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState(filters.q || "");
 
   useEffect(() => {
-    menuApi.getCategories().then(setCategories).catch(console.error);
-  }, []);
+    if (isGuest) {
+      // Load categories từ guest menu API
+      guestMenuApi.getGuestMenu().then(data => {
+        setCategories(data.categories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          description: cat.description,
+          status: 'active' as const,
+          displayOrder: cat.displayOrder,
+        })));
+      }).catch(console.error);
+    } else {
+      menuApi.getCategories().then(setCategories).catch(console.error);
+    }
+  }, [isGuest]);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);

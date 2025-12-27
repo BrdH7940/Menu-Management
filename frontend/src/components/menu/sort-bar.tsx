@@ -15,36 +15,43 @@ interface SortBarProps {
 }
 
 export function SortBar({ filters, onFiltersChange }: SortBarProps) {
+  // Support cả sort/sortBy và order/sortOrder
+  const currentSort = filters.sort || filters.sortBy || "created_at";
+  const currentOrder = filters.order || filters.sortOrder || "desc";
+
   const handleSortChange = (value: string) => {
     onFiltersChange({
       ...filters,
       sort: value as any,
+      sortBy: value as any,
       page: 1,
     });
   };
 
   const handleOrderToggle = () => {
+    const newOrder = currentOrder === "asc" ? "desc" : "asc";
     onFiltersChange({
       ...filters,
-      order: filters.order === "asc" ? "desc" : "asc",
+      order: newOrder,
+      sortOrder: newOrder,
       page: 1,
     });
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">Sort by:</span>
+    <div className="flex items-center gap-2 p-2">
+      <span className="text-sm text-muted-foreground">Sắp xếp theo:</span>
       <Select
-        value={filters.sort || "created_at"}
+        value={currentSort}
         onValueChange={handleSortChange}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="created_at">Created Date</SelectItem>
-          <SelectItem value="price">Price</SelectItem>
-          <SelectItem value="popularity">Popularity</SelectItem>
+          <SelectItem value="created_at">Ngày tạo</SelectItem>
+          <SelectItem value="price">Giá</SelectItem>
+          <SelectItem value="chef_choice">Chef Choice</SelectItem>
         </SelectContent>
       </Select>
 
@@ -52,9 +59,9 @@ export function SortBar({ filters, onFiltersChange }: SortBarProps) {
         variant="outline"
         size="icon"
         onClick={handleOrderToggle}
-        title={filters.order === "asc" ? "Ascending" : "Descending"}
+        title={currentOrder === "asc" ? "Tăng dần" : "Giảm dần"}
       >
-        {filters.order === "asc" ? (
+        {currentOrder === "asc" ? (
           <ArrowUp className="h-4 w-4" />
         ) : (
           <ArrowDown className="h-4 w-4" />

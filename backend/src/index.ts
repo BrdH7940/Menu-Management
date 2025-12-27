@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { menuItemsRouter } from './routes/menu-items.js';
 import { menuCategoriesRouter } from './routes/menu-categories.js';
 import { photosRouter } from './routes/photos.js';
+import { modifierGroupsRouter } from './routes/modifier-groups.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/uploads', express.static(process.env.UPLOAD_DIR || './uploads'));
 app.use('/api/admin/menu/items', menuItemsRouter);
 app.use('/api/admin/menu/categories', menuCategoriesRouter);
 app.use('/api/admin/menu/items', photosRouter);
+app.use('/api/admin/menu/modifier-groups', modifierGroupsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

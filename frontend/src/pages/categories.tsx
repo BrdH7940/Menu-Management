@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MenuCategory } from "@/types/menu";
-import { menuApi } from "@/lib/api";
+import { menuApi } from '@/lib/api';
 
 export function Categories() {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
