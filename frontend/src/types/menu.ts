@@ -34,7 +34,10 @@ export interface ModifierGroup {
   minSelections: number;
   maxSelections: number;
   displayOrder: number;
-  options: ModifierOption[];
+    options: ModifierOption[];
+    selectionType: 'single' | 'multiple';
+    restaurantId: string;
+    status: 'active' | 'inactive';
 }
 
 export interface MenuItem {
@@ -93,4 +96,29 @@ export interface MenuHealth {
   itemsWithoutImage: number;
   itemsWithoutDescription: number;
 }
+export interface AttachModifierPayload {
+    menuItemId: string;
+    groupIds: string[];
+}
 
+export interface GuestMenuItem extends Omit<MenuItem, 'status'> {
+    status: 'available';
+    primaryPhotoUrl: string;
+}
+
+export interface GuestCategory extends Category {
+    status: 'active';
+    items: GuestMenuItem[];
+}
+
+export interface GuestMenuResponse {
+    restaurant_name?: string;
+    categories: GuestCategory[];
+}
+
+export interface GuestMenuFilters {
+    q?: string;
+    categoryId?: string;
+    sortBy?: 'popularity' | 'price' | 'chefRecommendation';
+    isChefRecommended?: boolean;
+}

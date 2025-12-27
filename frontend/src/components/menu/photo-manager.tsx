@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Upload, X, Star, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { menuApi } from "@/lib/api";
+import { menuApi } from '@/lib/api';
 import { MenuItemPhoto } from "@/types/menu";
 
 interface PhotoManagerProps {

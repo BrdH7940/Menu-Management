@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MenuItemFilters, MenuCategory } from "@/types/menu";
-import { menuApi } from "@/lib/api";
+import { menuApi } from '@/lib/api';
 
 interface FilterBarProps {
   filters: MenuItemFilters;

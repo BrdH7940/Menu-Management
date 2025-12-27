@@ -1,191 +1,110 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Menu, Plus } from "lucide-react"
+import { Menu, Plus, Settings2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MenuGrid } from "@/components/menu/menu-grid"
-import { EditItemDrawer } from "@/components/menu/edit-item-drawer"
-import { QuickEditPriceDialog } from "@/components/menu/quick-edit-price-dialog"
 import { CreateEditItemDialog } from "@/components/menu/create-edit-item-dialog"
+import { ModifierGroupsManagementDialog } from "@/components/menu/modifier-groups-management-dialog"
 import { DeleteItemDialog } from "@/components/menu/delete-item-dialog"
 import { FilterBar } from "@/components/menu/filter-bar"
 import { SortBar } from "@/components/menu/sort-bar"
 import { Pagination } from "@/components/menu/pagination"
-import { useMenuItems, useUpdateMenuItem } from "@/hooks/use-menu-query"
+import { useMenuItems } from "@/hooks/use-menu-query"
 import { MenuItem, MenuItemFilters } from "@/types/menu"
 
 export function MenuItems() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  
-  // Initialize filters from URL params
-  const getFiltersFromParams = (): MenuItemFilters => {
-    return {
-      page: parseInt(searchParams.get("page") || "1"),
-      limit: parseInt(searchParams.get("limit") || "20"),
-      q: searchParams.get("q") || undefined,
-      categoryId: searchParams.get("categoryId") || undefined,
-      status: (searchParams.get("status") as any) || undefined,
-      sort: (searchParams.get("sort") as any) || "created_at",
-      order: (searchParams.get("order") as any) || "desc",
-    }
-  }
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [isModifierGroupsOpen, setIsModifierGroupsOpen] = useState(false)
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+    const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const [filters, setFilters] = useState<MenuItemFilters>(getFiltersFromParams())
-  
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams()
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        params.set(key, String(value))
-      }
+    const getFiltersFromParams = (): MenuItemFilters => ({
+        page: parseInt(searchParams.get("page") || "1"),
+        limit: parseInt(searchParams.get("limit") || "20"),
+        q: searchParams.get("q") || undefined,
+        categoryId: searchParams.get("categoryId") || undefined,
+        status: (searchParams.get("status") as any) || undefined,
     })
-    setSearchParams(params, { replace: true })
-  }, [filters, setSearchParams])
 
-  // Update filters when URL params change (e.g., browser back/forward)
-  useEffect(() => {
-    setFilters(getFiltersFromParams())
-  }, [searchParams])
+    const [filters, setFilters] = useState<MenuItemFilters>(getFiltersFromParams())
+    const { data, isLoading, refetch } = useMenuItems(filters)
 
-  const { data, isLoading } = useMenuItems(filters)
-  const updateMutation = useUpdateMenuItem()
+    useEffect(() => {
+        const params = new URLSearchParams()
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) params.set(key, String(value))
+        })
+        setSearchParams(params, { replace: true })
+    }, [filters])
 
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [quickEditItem, setQuickEditItem] = useState<MenuItem | null>(null)
-  const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <Menu className="h-6 w-6 text-primary" />
+                    <h1 className="text-3xl font-bold">Quản lý Món ăn</h1>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => setIsModifierGroupsOpen(true)}>
+                        <Settings2 className="h-4 w-4 mr-2" />
+                        Quản lý Modifiers
+                    </Button>
+                    <Button onClick={() => setIsCreateDialogOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Thêm món ăn
+                    </Button>
+                </div>
+            </div>
 
-  const handleEditItem = (item: MenuItem) => {
-    setEditingItem(item)
-    setIsEditDialogOpen(true)
-  }
+            <FilterBar filters={filters} onFiltersChange={setFilters} />
 
-  const handleDeleteItem = (item: MenuItem) => {
-    setDeleteItem(item)
-    setIsDeleteDialogOpen(true)
-  }
+            <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                    Tổng cộng: {data?.pagination.total || 0} món
+                </div>
+                <SortBar filters={filters} onFiltersChange={setFilters} />
+            </div>
 
-  const handleRefresh = () => {
-    // Trigger refetch by updating filters
-    setFilters({ ...filters })
-  }
+            <MenuGrid
+                items={data?.items || []}
+                isLoading={isLoading}
+                onEditItem={(item) => { setEditingItem(item); setIsEditDialogOpen(true); }}
+                onDeleteItem={(item) => { setDeleteItem(item); setIsDeleteDialogOpen(true); }}
+            />
 
-  const handleQuickEditPrice = (item: MenuItem) => {
-    setQuickEditItem(item)
-    setIsQuickEditOpen(true)
-  }
+            {data?.pagination && data.pagination.totalPages > 1 && (
+                <Pagination
+                    page={data.pagination.page}
+                    totalPages={data.pagination.totalPages}
+                    onPageChange={(page) => setFilters({ ...filters, page })}
+                />
+            )}
 
-  const handleSaveItem = async (item: MenuItem) => {
-    const { photos, modifierGroups, ...updateData } = item;
-    await updateMutation.mutateAsync({
-      id: item.id,
-      data: updateData,
-    })
-    setIsDrawerOpen(false)
-  }
+            {/* Dialog Quản lý Modifier tập trung */}
+            <ModifierGroupsManagementDialog
+                open={isModifierGroupsOpen}
+                onOpenChange={setIsModifierGroupsOpen}
+            />
 
-  const handleQuickSavePrice = async (item: MenuItem, newPrice: number) => {
-    await updateMutation.mutateAsync({
-      id: item.id,
-      data: { price: newPrice },
-    })
-    setIsQuickEditOpen(false)
-  }
+            <CreateEditItemDialog
+                open={isCreateDialogOpen || isEditDialogOpen}
+                onOpenChange={(open) => {
+                    setIsCreateDialogOpen(open);
+                    if (!open) { setIsEditDialogOpen(false); setEditingItem(null); }
+                }}
+                item={editingItem}
+                onSuccess={refetch}
+            />
 
-  const handleFiltersChange = (newFilters: MenuItemFilters) => {
-    setFilters(newFilters)
-  }
-
-  const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page })
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Menu className="h-6 w-6 text-primary" />
-          <h1 className="text-3xl font-bold">Quản lý Món ăn</h1>
+            <DeleteItemDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                item={deleteItem}
+                onSuccess={refetch}
+            />
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm món ăn
-        </Button>
-      </div>
-
-      <FilterBar filters={filters} onFiltersChange={handleFiltersChange} />
-
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          {data?.pagination.total ? (
-            <>
-              Showing {((filters.page || 1) - 1) * (filters.limit || 20) + 1} to{" "}
-              {Math.min((filters.page || 1) * (filters.limit || 20), data.pagination.total)} of{" "}
-              {data.pagination.total} items
-            </>
-          ) : (
-            "No items found"
-          )}
-        </div>
-        <SortBar filters={filters} onFiltersChange={handleFiltersChange} />
-      </div>
-
-      <MenuGrid
-        items={data?.items || []}
-        isLoading={isLoading}
-        onEditItem={handleEditItem}
-        onQuickEditPrice={handleQuickEditPrice}
-        onDeleteItem={handleDeleteItem}
-      />
-
-      {data?.pagination && data.pagination.totalPages > 1 && (
-        <Pagination
-          page={data.pagination.page}
-          totalPages={data.pagination.totalPages}
-          onPageChange={handlePageChange}
-        />
-      )}
-
-      <EditItemDrawer
-        item={selectedItem}
-        open={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
-        onSave={handleSaveItem}
-      />
-
-      <QuickEditPriceDialog
-        item={quickEditItem}
-        open={isQuickEditOpen}
-        onOpenChange={setIsQuickEditOpen}
-        onSave={handleQuickSavePrice}
-      />
-
-      <CreateEditItemDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        item={null}
-        onSuccess={handleRefresh}
-      />
-
-      <CreateEditItemDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        item={editingItem}
-        onSuccess={handleRefresh}
-      />
-
-      <DeleteItemDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        item={deleteItem}
-        onSuccess={handleRefresh}
-      />
-    </div>
-  )
+    )
 }
-

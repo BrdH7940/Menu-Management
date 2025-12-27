@@ -102,6 +102,43 @@ export const menuItemQuerySchema = z.object({
   sort_order: z.enum(['asc', 'desc']).optional().default('desc'),
 });
 
+// Schema cho Modifier Option
+export const ModifierOptionSchema = z.object({
+    id: z.string().optional(),
+    name: z.string().min(1, 'Tên tùy chọn là bắt buộc'),
+    price: z.number().min(0, 'Giá phải >= 0').default(0),
+    is_default: z.boolean().default(false),
+    display_order: z.number().int().min(0).default(0),
+});
+
+// Schema cho tạo Modifier Group
+export const CreateModifierGroupSchema = z.object({
+    name: z.string().min(1, 'Tên nhóm tùy chọn là bắt buộc'),
+    description: z.string().optional().nullable(),
+    is_required: z.boolean().default(false),
+    min_selections: z.number().int().min(0).default(0),
+    max_selections: z.number().int().min(1).default(1),
+    selection_type: z.enum(['single', 'multiple']).default('single'),
+    display_order: z.number().int().min(0).default(0),
+    status: z.enum(['active', 'inactive']).default('active'),
+    options: z.array(ModifierOptionSchema).optional().default([]),
+});
+
+// Schema cho cập nhật Modifier Group
+export const UpdateModifierGroupSchema = CreateModifierGroupSchema.partial();
+
+// Schema cho gắn Modifier Group vào Menu Item
+export const AttachModifierGroupSchema = z.object({
+    modifier_group_ids: z.array(z.string().uuid()).min(1, 'Phải chọn ít nhất 1 nhóm tùy chọn'),
+    display_orders: z.record(z.string(), z.number().int().min(0)).optional(),
+});
+
+// TypeScript types
+export type CreateModifierGroupInput = z.infer<typeof CreateModifierGroupSchema>;
+export type UpdateModifierGroupInput = z.infer<typeof UpdateModifierGroupSchema>;
+export type AttachModifierGroupInput = z.infer<typeof AttachModifierGroupSchema>;
+export type ModifierOptionInput = z.infer<typeof ModifierOptionSchema>;
+
 // Types
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;

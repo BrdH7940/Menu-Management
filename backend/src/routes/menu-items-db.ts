@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { menuItemService, formatPrice } from '../services/menu-items-supabase.js';
 import { createMenuItemSchema, updateMenuItemSchema, menuItemQuerySchema } from '../schemas/validation.js';
 import { ZodError } from 'zod';
+import { modifierGroupService } from '../services/modifier-groups-supabase.js'; 
 
 const router = Router();
 
@@ -280,6 +281,25 @@ router.delete('/:id', async (req: Request, res: Response) => {
       error: error.message
     });
   }
+});
+
+router.post('/:id/modifiers', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params; // menuItemId
+        const { modifier_group_ids } = req.body;
+        const restaurantId = req.headers['x-restaurant-id'] as string;
+
+        // Gọi hàm từ service đã có sẵn
+        await modifierGroupService.attachToMenuItem(
+            id,
+            restaurantId,
+            modifier_group_ids
+        );
+
+        res.json({ success: true, message: 'Gắn nhóm tùy chọn thành công' });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 export { router as menuItemsDbRouter };

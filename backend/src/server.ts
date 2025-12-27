@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import { categoriesRouter } from './routes/categories.js';
 import { menuItemsDbRouter } from './routes/menu-items-db.js';
 import { photosDbRouter } from './routes/photos-db.js';
+import { modifierGroupsRouter } from './routes/modifier-groups.js'; 
+import { menuItemsRouter } from './routes/menu-items.js';
+import { guestMenuRouter } from './routes/guest-menu.js';
 
 dotenv.config();
 
@@ -22,6 +25,9 @@ app.use('/uploads', express.static(process.env.UPLOAD_DIR || './uploads'));
 app.use('/api/admin/menu/categories', categoriesRouter);
 app.use('/api/admin/menu/items', menuItemsDbRouter);
 app.use('/api/admin/menu/items', photosDbRouter); // Photos routes
+app.use('/api/admin/menu/modifier-groups', modifierGroupsRouter);
+app.use('/api/admin/menu/items', menuItemsRouter); // Additional menu items routes
+app.use('/api/menu', guestMenuRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -54,5 +60,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
   console.log(`📋 API Categories: http://localhost:${PORT}/api/admin/menu/categories`);
   console.log(`🍽️  API Menu Items: http://localhost:${PORT}/api/admin/menu/items`);
-  console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🛠️  Modifier Groups: http://localhost:${PORT}/api/admin/menu/modifier-groups`);
 });
