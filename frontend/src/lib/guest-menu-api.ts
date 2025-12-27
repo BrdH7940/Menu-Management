@@ -31,6 +31,8 @@ export const guestMenuApi = {
             if (filters.q) backendParams.search = filters.q;
             if (filters.categoryId) backendParams.category_id = filters.categoryId;
             if (filters.sortBy) backendParams.sort_by = filters.sortBy;
+            if (filters.sortOrder) backendParams.sort_order = filters.sortOrder;
+            if (filters.status) backendParams.status = filters.status;
             if (filters.isChefRecommended) backendParams.is_chef_recommended = true;
         }
 
@@ -61,7 +63,7 @@ export const guestMenuApi = {
                     status: 'active',
                     displayOrder: cat.display_order,
                     items: (cat.items || [])
-                        .filter((item: any) => item.status === 'available')
+                        // Bỏ filter client-side, để backend filter theo status
                         .map((item: any) => ({
                             id: item.id,
                             name: item.name,
@@ -69,7 +71,7 @@ export const guestMenuApi = {
                             price: item.price,
                             categoryId: item.category_id,
                             categoryName: cat.name,
-                            status: 'available',
+                            status: item.status,
                             prepTimeMinutes: item.prep_time_minutes,
                             isChefRecommended: item.is_chef_recommended,
                             primaryPhotoUrl: item.primary_photo_url || item.photos?.[0]?.url,

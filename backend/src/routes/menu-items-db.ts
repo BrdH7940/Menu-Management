@@ -96,6 +96,8 @@ router.get('/:id', async (req: Request, res: Response) => {
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
+    console.log('Create menu item request body:', req.body);
+    
     // Validate input
     const validatedData = createMenuItemSchema.parse(req.body);
     
@@ -113,9 +115,10 @@ router.post('/', async (req: Request, res: Response) => {
     console.error('Error creating menu item:', error);
     
     if (error instanceof ZodError) {
+      const errorMessages = error.errors.map(e => e.message).join(', ');
       return res.status(400).json({
         success: false,
-        message: 'Dữ liệu không hợp lệ',
+        message: errorMessages,
         errors: formatZodError(error)
       });
     }

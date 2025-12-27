@@ -85,7 +85,9 @@ export interface MenuItemFilters {
   q?: string;
   categoryId?: string;
   status?: 'available' | 'unavailable' | 'sold_out';
-  sort?: 'price' | 'created_at' | 'popularity';
+  sort?: 'price' | 'created_at' | 'chef_choice';
+  sortBy?: 'price' | 'created_at' | 'chef_choice'; // Alias for sort
+  sortOrder?: 'asc' | 'desc';
   order?: 'asc' | 'desc';
 }
 
@@ -119,6 +121,8 @@ export interface GuestMenuResponse {
 export interface GuestMenuFilters {
     q?: string;
     categoryId?: string;
-    sortBy?: 'popularity' | 'price' | 'chefRecommendation';
+    sortBy?: 'created_at' | 'price' | 'chef_choice';
+    sortOrder?: 'asc' | 'desc';
+    status?: 'available' | 'unavailable' | 'sold_out' | '';
     isChefRecommended?: boolean;
 }

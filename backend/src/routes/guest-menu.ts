@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const { search, category_id, is_chef_recommended, sort_by } = req.query;
+        const { search, category_id, is_chef_recommended, sort_by, sort_order, status } = req.query;
 
-        // 1. Lấy Categories - Đảm bảo lấy đủ các trường status để frontend filter
+        // 1. Lấy Categories
         const { data: categories, error: catError } = await supabase
             .from('menu_categories')
             .select('*')
@@ -18,22 +18,33 @@ router.get('/', async (req, res) => {
 
         if (catError) throw catError;
 
-        // 2. Lấy Items
+        // 2. Lấy Items - Hỗ trợ filter status
         let itemsQuery = supabase
             .from('menu_items')
             .select(`
                 *,
                 menu_item_photos(id, url, is_primary, display_order)
             `)
-            .eq('status', 'available')
             .eq('is_deleted', false);
+
+        // Filter theo status (nếu không có thì lấy tất cả)
+        if (status && ['available', 'unavailable', 'sold_out'].includes(status as string)) {
+            itemsQuery = itemsQuery.eq('status', status);
+        }
 
         if (search) itemsQuery = itemsQuery.ilike('name', `%${search}%`);
         if (category_id) itemsQuery = itemsQuery.eq('category_id', category_id);
         if (is_chef_recommended === 'true') itemsQuery = itemsQuery.eq('is_chef_recommended', true);
 
+        // Sort - Hỗ trợ nhiều loại sort
+        const ascending = sort_order === 'asc';
         if (sort_by === 'price') {
-            itemsQuery = itemsQuery.order('price', { ascending: true });
+            itemsQuery = itemsQuery.order('price', { ascending });
+        } else if (sort_by === 'created_at') {
+            itemsQuery = itemsQuery.order('created_at', { ascending });
+        } else if (sort_by === 'chef_choice') {
+            // Sort theo chef recommendation (true trước), rồi theo tên
+            itemsQuery = itemsQuery.order('is_chef_recommended', { ascending: false }).order('name', { ascending: true });
         } else {
             itemsQuery = itemsQuery.order('name', { ascending: true });
         }

@@ -9,10 +9,30 @@ import { Badge } from "@/components/ui/badge";
 import { formatPriceVND } from "@/lib/api";
 
 export function GuestMenuPage() {
-    const [filters, setFilters] = useState({ q: "", categoryId: "", sortBy: "price" });
+    const [filters, setFilters] = useState({
+        q: "",
+        categoryId: "",
+        sortBy: "created_at",
+        sortOrder: "desc" as "asc" | "desc",
+        status: "" as "" | "available" | "unavailable" | "sold_out"
+    });
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
     const { data: menuData, isLoading } = useGuestMenu(filters as any);
+
+    // Hàm lấy màu badge theo status
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'available':
+                return <Badge className="bg-green-500 hover:bg-green-600 text-[9px] h-4">Có sẵn</Badge>;
+            case 'unavailable':
+                return <Badge className="bg-gray-500 hover:bg-gray-600 text-[9px] h-4">Tạm hết</Badge>;
+            case 'sold_out':
+                return <Badge className="bg-red-500 hover:bg-red-600 text-[9px] h-4">Hết hàng</Badge>;
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className="h-screen bg-gray-50 overflow-hidden">
@@ -21,7 +41,7 @@ export function GuestMenuPage() {
                 <div className="p-4 space-y-4">
                     <h1 className="text-2xl font-bold text-primary">Smart Menu 🍽️</h1>
                 </div>
-                <FilterBar filters={filters} onFiltersChange={(f) => setFilters(prev => ({ ...prev, ...f }))} />
+                <FilterBar filters={filters} onFiltersChange={(f) => setFilters(prev => ({ ...prev, ...f }))} isGuest />
                 <SortBar filters={filters} onFiltersChange={(f) => setFilters(prev => ({ ...prev, ...f }))} />
             </div>
 
@@ -38,14 +58,15 @@ export function GuestMenuPage() {
                                     <div
                                         key={item.id}
                                         onClick={() => setSelectedItem(item as any)}
-                                        className="flex gap-3 p-3 bg-white rounded-xl shadow-sm border border-transparent active:border-primary transition-all"
+                                        className={`flex gap-3 p-3 bg-white rounded-xl shadow-sm border border-transparent active:border-primary transition-all ${item.status !== 'available' ? 'opacity-60' : ''}`}
                                     >
                                         <div className="flex-1 space-y-1">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 <h3 className="font-semibold text-gray-800">{item.name}</h3>
                                                 {item.isChefRecommended && (
                                                     <Badge className="bg-orange-500 hover:bg-orange-600 text-[9px] h-4">Chef Choice</Badge>
                                                 )}
+                                                {getStatusBadge(item.status)}
                                             </div>
                                             <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
                                             <p className="font-bold text-primary">{formatPriceVND(item.price)}</p>

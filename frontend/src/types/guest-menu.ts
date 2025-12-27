@@ -29,7 +29,7 @@ export interface GuestMenuItem {
     primaryPhotoUrl?: string;
     categoryId: string;
     categoryName: string;
-    status: 'available';
+    status: 'available' | 'unavailable' | 'sold_out';
     prepTimeMinutes?: number;
     isChefRecommended?: boolean;
     modifierGroups?: ModifierGroup[];
@@ -52,7 +52,9 @@ export interface GuestMenuResponse {
 export interface GuestMenuFilters {
     q?: string;
     categoryId?: string;
-    sortBy?: 'popularity' | 'price' | 'chefRecommendation';
+    sortBy?: 'created_at' | 'price' | 'chef_choice';
+    sortOrder?: 'asc' | 'desc';
+    status?: 'available' | 'unavailable' | 'sold_out' | '';
     isChefRecommended?: boolean;
 }
 

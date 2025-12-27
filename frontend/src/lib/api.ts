@@ -99,17 +99,26 @@ export const menuApi = {
             name: data.name,
             category_id: data.categoryId,
             price: data.price,
-            description: data.description,
+            description: data.description || '',
             prep_time_minutes: data.prepTimeMinutes || 0,
             status: data.status || 'available',
             is_chef_recommended: data.isChefRecommended || false,
         };
+        
+        console.log('Creating item with payload:', payload);
+        
         const response = await fetch(`${API_BASE}/admin/menu/items`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-restaurant-id': MOCK_RESTAURANT_ID },
             body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error('Failed to create menu item');
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Create item error:', errorData);
+            throw new Error(errorData.message || errorData.error || 'Failed to create menu item');
+        }
+        
         const result = await response.json();
         return { ...result.data, categoryId: result.data.category_id, priceFormatted: formatPriceVND(result.data.price) };
     },
@@ -428,6 +437,8 @@ export const menuApi = {
     },
 
     attachModifiersToItem: async (itemId: string, modifierGroupIds: string[]): Promise<void> => {
+        // Không cần gọi API nếu không có modifier nào được chọn
+        // Backend sẽ xóa tất cả modifiers cũ, đây là hành vi mong muốn
         const response = await fetch(`${API_BASE}/admin/menu/modifier-groups/items/${itemId}/modifiers`, {
             method: 'POST',
             headers: {
@@ -436,6 +447,9 @@ export const menuApi = {
             },
             body: JSON.stringify({ modifier_group_ids: modifierGroupIds })
         });
-        if (!response.ok) throw new Error('Failed to attach modifiers');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to attach modifiers');
+        }
     },
 };

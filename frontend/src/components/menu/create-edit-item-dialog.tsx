@@ -174,6 +174,7 @@ export function CreateEditItemDialog({
     // --- LƯU TỔNG HỢP ---
     const handleSave = async () => {
         if (!formData.name.trim()) return setError("Tên món ăn không được để trống");
+        if (!formData.categoryId) return setError("Vui lòng chọn danh mục");
         if (formData.price <= 0) return setError("Giá phải lớn hơn 0");
 
         try {
@@ -194,7 +195,12 @@ export function CreateEditItemDialog({
             // FIX: Chỉ cập nhật modifiers khi người dùng đã vào tab modifiers
             // Để tránh xóa nhầm khi chỉ cập nhật thông tin chung
             if (activeTab === "modifiers" || !item) {
-                await menuApi.attachModifiersToItem(itemId, selectedModifierGroupIds);
+                try {
+                    await menuApi.attachModifiersToItem(itemId, selectedModifierGroupIds);
+                } catch (modifierError) {
+                    // Không block việc tạo món ăn, chỉ log warning
+                    console.warn('Modifier attachment skipped:', modifierError);
+                }
             }
 
             // 3. Xử lý ảnh
