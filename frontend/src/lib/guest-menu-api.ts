@@ -31,6 +31,7 @@ export const guestMenuApi = {
             if (filters.q) backendParams.search = filters.q;
             if (filters.categoryId) backendParams.category_id = filters.categoryId;
             if (filters.sortBy) backendParams.sort_by = filters.sortBy;
+            if (filters.order) backendParams.order = filters.order;
             if (filters.isChefRecommended) backendParams.is_chef_recommended = true;
         }
 
@@ -72,6 +73,7 @@ export const guestMenuApi = {
                             status: 'available',
                             prepTimeMinutes: item.prep_time_minutes,
                             isChefRecommended: item.is_chef_recommended,
+                            displayOrder: item.display_order,
                             primaryPhotoUrl: item.primary_photo_url || item.photos?.[0]?.url,
                             // FIX: Map modifier_groups từ backend
                             modifierGroups: (item.modifier_groups || []).map((group: any) => ({

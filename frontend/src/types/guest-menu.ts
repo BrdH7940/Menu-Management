@@ -53,6 +53,7 @@ export interface GuestMenuFilters {
     q?: string;
     categoryId?: string;
     sortBy?: 'popularity' | 'price' | 'chefRecommendation';
+    order?: 'asc' | 'desc'; 
     isChefRecommended?: boolean;
 }
 

@@ -1,15 +1,15 @@
 ﻿/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useGuestMenu } from "@/hooks/use-guest-menu";
-import { FilterBar } from "@/components/menu/filter-bar";
-import { SortBar } from "@/components/menu/sort-bar";
+import { FilterBar } from "@/components/guest/filter-bar";
+import { SortBar } from "@/components/guest/sort-bar";
 import { GuestItemDialog } from "@/components/menu/guest-item-dialog";
 import { GuestMenuItem, MenuItem } from "@/types/menu";
 import { Badge } from "@/components/ui/badge";
 import { formatPriceVND } from "@/lib/api";
 
 export function GuestMenuPage() {
-    const [filters, setFilters] = useState({ q: "", categoryId: "", sortBy: "price" });
+    const [filters, setFilters] = useState({ q: "", categoryId: "", sortBy: "price", order: "asc"});
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
     const { data: menuData, isLoading } = useGuestMenu(filters as any);

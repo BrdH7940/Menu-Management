@@ -6,7 +6,8 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const { search, category_id, is_chef_recommended, sort_by } = req.query;
+        const { search, category_id, is_chef_recommended, sort_by, order } = req.query;
+        const isAscending = order !== 'desc';
 
         // 1. Lấy Categories - Đảm bảo lấy đủ các trường status để frontend filter
         const { data: categories, error: catError } = await supabase
@@ -33,9 +34,12 @@ router.get('/', async (req, res) => {
         if (is_chef_recommended === 'true') itemsQuery = itemsQuery.eq('is_chef_recommended', true);
 
         if (sort_by === 'price') {
-            itemsQuery = itemsQuery.order('price', { ascending: true });
+            itemsQuery = itemsQuery.order('price', { ascending: isAscending });
+        } else if (sort_by === 'displayOrder') {
+            itemsQuery = itemsQuery.order('display_order', { ascending: isAscending });
         } else {
-            itemsQuery = itemsQuery.order('name', { ascending: true });
+            // Mặc định sắp xếp theo tên hoặc theo lựa chọn khác
+            itemsQuery = itemsQuery.order(sort_by ? String(sort_by) : 'name', { ascending: isAscending });
         }
 
         const { data: items, error: itemsError } = await itemsQuery;

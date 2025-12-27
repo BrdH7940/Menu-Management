@@ -87,6 +87,7 @@ export function MenuItems() {
             <ModifierGroupsManagementDialog
                 open={isModifierGroupsOpen}
                 onOpenChange={setIsModifierGroupsOpen}
+                onSuccess={refetch}
             />
 
             <CreateEditItemDialog

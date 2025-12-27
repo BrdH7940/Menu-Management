@@ -27,6 +27,7 @@ router.get('/', async (req, res) => {
 /**
  * POST /api/admin/menu/modifier-groups/bulk
  * Xử lý lưu hàng loạt từ Frontend menuApi.saveModifierGroups
+ * FIX: Thêm logic để xử lý delete
  */
 router.post('/bulk', async (req, res) => {
     try {
@@ -35,16 +36,51 @@ router.post('/bulk', async (req, res) => {
 
         if (!restaurantId) return res.status(400).json({ success: false, message: 'Thiếu restaurant ID' });
 
+        // 1. Lấy danh sách groups hiện có từ database
+        const existingGroups = await modifierGroupService.getAll(restaurantId);
+        const existingIds = existingGroups.map(g => g.id);
+
+        // 2. Lấy danh sách IDs từ frontend (bỏ qua temp IDs)
+        const incomingIds = groups
+            .map((g: any) => g.id)
+            .filter((id: string) => !id.startsWith('temp-'));
+
+        // 3. Tìm các IDs cần xóa (có trong DB nhưng không có trong danh sách mới)
+        const idsToDelete = existingIds.filter(id => !incomingIds.includes(id));
+
+        // 4. Xóa các groups không còn trong danh sách
+        const deleteErrors: string[] = [];
+        for (const idToDelete of idsToDelete) {
+            const result = await modifierGroupService.delete(idToDelete, restaurantId);
+            if (!result.success) {
+                const groupName = existingGroups.find(g => g.id === idToDelete)?.name || idToDelete;
+                deleteErrors.push(`"${groupName}": ${result.message}`);
+            }
+        }
+
+        // Nếu có lỗi khi xóa, trả về thông báo chi tiết
+        if (deleteErrors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Một số nhóm không thể xóa',
+                errors: deleteErrors
+            });
+        }
+
+        // 5. Xử lý create/update cho các groups còn lại
         for (const group of groups) {
-            if (group.id) {
-                await modifierGroupService.update(group.id, restaurantId, group);
-            } else {
+            if (group.id.startsWith('temp-')) {
+                // Tạo mới (temp-id)
                 await modifierGroupService.create(restaurantId, group);
+            } else {
+                // Cập nhật
+                await modifierGroupService.update(group.id, restaurantId, group);
             }
         }
 
         res.json({ success: true, message: 'Lưu hàng loạt thành công' });
     } catch (error: any) {
+        console.error('Bulk save error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });

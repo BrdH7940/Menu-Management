@@ -259,8 +259,8 @@ export const menuApi = {
     },
 
     /**
-     * Lưu danh sách Modifier Groups (Hàm gộp xử lý Create/Update hàng loạt)
-     * Phù hợp cho logic tách Dialog quản lý riêng
+     * Lưu danh sách Modifier Groups (Hàm gộp xử lý Create/Update/Delete hàng loạt)
+     * UPDATED: Thêm xử lý error với errors array
      */
     saveModifierGroups: async (groups: ModifierGroup[]): Promise<void> => {
         const payload = groups.map(group => ({
@@ -290,7 +290,12 @@ export const menuApi = {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Failed to save modifier groups');
+            // Parse errors array if exists
+            const errorObj: any = new Error(error.message || 'Failed to save modifier groups');
+            if (error.errors) {
+                errorObj.errors = error.errors;
+            }
+            throw errorObj;
         }
     },
 
@@ -347,7 +352,7 @@ export const menuApi = {
         if (!response.ok) throw new Error('Failed to delete modifier group');
     },
 
-    
+
 
     // --- GUEST / PUBLIC API ---
     getGuestMenu: async (filters?: GuestMenuFilters): Promise<GuestMenuResponse> => {
@@ -417,7 +422,7 @@ export const menuApi = {
         });
         return { valid: errors.length === 0, errors };
     },
-    // Thêm vào menuApi trong api.ts
+
     getAttachedModifiers: async (itemId: string): Promise<ModifierGroup[]> => {
         const response = await fetch(`${API_BASE}/admin/menu/modifier-groups/items/${itemId}/modifiers`, {
             headers: { 'x-restaurant-id': MOCK_RESTAURANT_ID },
