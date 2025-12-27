@@ -11,6 +11,16 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Sử dụng service_role key cho backend (có full access)
-export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Configure với schema 'public' và bypass RLS
+export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: {
+    schema: 'public',
+  },
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+});
 
 console.log('✅ Supabase client initialized');
+console.log(`   URL: ${supabaseUrl.substring(0, 30)}...`);

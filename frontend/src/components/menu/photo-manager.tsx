@@ -13,18 +13,69 @@ interface PhotoManagerProps {
 export function PhotoManager({ itemId, photos, onPhotosChange }: PhotoManagerProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Allowed image types
+  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+  // Validate file type and size
+  const validateFile = (file: File): string | null => {
+    // Validate file type
+    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+      return `File "${file.name}" không phải là file ảnh hợp lệ. Chỉ chấp nhận: JPEG, PNG, WebP`;
+    }
+    
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      return `File "${file.name}" quá lớn (${sizeMB}MB). Kích thước tối đa: 5MB`;
+    }
+    
+    return null;
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
+
+    // Validate all files before uploading
+    setError(null);
+    const validationErrors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach((file) => {
+      const error = validateFile(file);
+      if (error) {
+        validationErrors.push(error);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join('\n'));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    if (validFiles.length === 0) {
+      setError("Không có file hợp lệ để upload");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     setUploading(true);
     const progress: Record<string, number> = {};
 
     try {
       // Simulate upload progress
-      files.forEach((file) => {
+      validFiles.forEach((file) => {
         progress[file.name] = 0;
         const interval = setInterval(() => {
           progress[file.name] = Math.min(progress[file.name] + 10, 90);
@@ -33,11 +84,12 @@ export function PhotoManager({ itemId, photos, onPhotosChange }: PhotoManagerPro
         setTimeout(() => clearInterval(interval), 2000);
       });
 
-      const uploadedPhotos = await menuApi.uploadPhotos(itemId, files);
+      const uploadedPhotos = await menuApi.uploadPhotos(itemId, validFiles);
       onPhotosChange([...photos, ...uploadedPhotos]);
+      setError(null);
     } catch (error) {
       console.error("Error uploading photos:", error);
-      alert("Failed to upload photos. Please try again.");
+      setError("Không thể upload ảnh. Vui lòng thử lại.");
     } finally {
       setUploading(false);
       setUploadProgress({});
@@ -88,22 +140,52 @@ export function PhotoManager({ itemId, photos, onPhotosChange }: PhotoManagerPro
     e.preventDefault();
     e.stopPropagation();
 
-    const files = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
+    const files = Array.from(e.dataTransfer.files);
 
-    if (files.length > 0) {
-      const dataTransfer = new DataTransfer();
-      files.forEach((file) => dataTransfer.items.add(file));
-      if (fileInputRef.current) {
-        fileInputRef.current.files = dataTransfer.files;
-        handleFileSelect({ target: fileInputRef.current } as any);
+    if (files.length === 0) return;
+
+    // Validate all files before processing
+    setError(null);
+    const validationErrors: string[] = [];
+    const validFiles: File[] = [];
+
+    files.forEach((file) => {
+      const error = validateFile(file);
+      if (error) {
+        validationErrors.push(error);
+      } else {
+        validFiles.push(file);
       }
+    });
+
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join('\n'));
+      return;
+    }
+
+    if (validFiles.length === 0) {
+      setError("Không có file hợp lệ để upload");
+      return;
+    }
+
+    // Create a synthetic event to reuse handleFileSelect logic
+    const dataTransfer = new DataTransfer();
+    validFiles.forEach((file) => dataTransfer.items.add(file));
+    if (fileInputRef.current) {
+      fileInputRef.current.files = dataTransfer.files;
+      handleFileSelect({ target: fileInputRef.current } as any);
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+          <p className="text-sm text-destructive whitespace-pre-line">{error}</p>
+        </div>
+      )}
+
       {/* Upload Area */}
       <div
         onDragOver={handleDragOver}
@@ -120,18 +202,18 @@ export function PhotoManager({ itemId, photos, onPhotosChange }: PhotoManagerPro
         />
         <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
         <p className="mt-2 text-sm text-muted-foreground">
-          Drag and drop images here, or{" "}
+          Kéo thả ảnh vào đây, hoặc{" "}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="text-primary hover:underline"
             disabled={uploading}
           >
-            browse
+            chọn file
           </button>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          JPG, PNG, or WebP up to 5MB each
+          JPEG, PNG, hoặc WebP (Tối đa 5MB mỗi ảnh)
         </p>
         {uploading && (
           <div className="mt-4 space-y-2">
